@@ -1,11 +1,11 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
 {
     private new Camera camera;
-    private new Rigidbody2D rigidbody;
-    private new Collider2D collider;
+    private new Rigidbody rigidbody;
+    private new Collider collider;
 
     private Vector2 velocity;
     private float inputAxis;
@@ -25,15 +25,15 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         camera = Camera.main;
-        rigidbody = GetComponent<Rigidbody2D>();
-        collider = GetComponent<Collider2D>();
+        rigidbody = GetComponent<Rigidbody>();
+        collider = GetComponent<Collider>();
     }
 
     private void OnEnable()
     {
         rigidbody.isKinematic = false;
         collider.enabled = true;
-        velocity = Vector2.zero;
+        velocity = Vector3.zero;
         jumping = false;
     }
 
@@ -41,7 +41,7 @@ public class PlayerMovement : MonoBehaviour
     {
         rigidbody.isKinematic = true;
         collider.enabled = false;
-        velocity = Vector2.zero;
+        velocity = Vector3.zero;
         jumping = false;
     }
 
@@ -49,7 +49,7 @@ public class PlayerMovement : MonoBehaviour
     {
         HorizontalMovement();
 
-        grounded = rigidbody.Raycast(Vector2.down);
+        grounded = rigidbody.Raycast(Vector3.down);
 
         if (grounded) {
             GroundedMovement();
@@ -61,12 +61,12 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         // move mario based on his velocity
-        Vector2 position = rigidbody.position;
+        Vector3 position = rigidbody.position;
         position += velocity * Time.fixedDeltaTime;
 
         // clamp within the screen bounds
-        Vector2 leftEdge = camera.ScreenToWorldPoint(Vector2.zero);
-        Vector2 rightEdge = camera.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height));
+        Vector3 leftEdge = camera.ScreenToWorldPoint(Vector3.zero);
+        Vector3 rightEdge = camera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height));
         position.x = Mathf.Clamp(position.x, leftEdge.x + 0.5f, rightEdge.x - 0.5f);
 
         rigidbody.MovePosition(position);
@@ -79,7 +79,7 @@ public class PlayerMovement : MonoBehaviour
         velocity.x = Mathf.MoveTowards(velocity.x, inputAxis * moveSpeed, moveSpeed * Time.deltaTime);
 
         // check if running into a wall
-        if (rigidbody.Raycast(Vector2.right * velocity.x)) {
+        if (rigidbody.Raycast(Vector3.right * velocity.x)) {
             velocity.x = 0f;
         }
 
@@ -116,12 +116,12 @@ public class PlayerMovement : MonoBehaviour
         velocity.y = Mathf.Max(velocity.y, gravity / 2f);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
             // bounce off enemy head
-            if (transform.DotTest(collision.transform, Vector2.down))
+            if (transform.DotTest(collision.transform, Vector3.down))
             {
                 velocity.y = jumpForce / 2f;
                 jumping = true;
@@ -130,7 +130,7 @@ public class PlayerMovement : MonoBehaviour
         else if (collision.gameObject.layer != LayerMask.NameToLayer("PowerUp"))
         {
             // stop vertical movement if mario bonks his head
-            if (transform.DotTest(collision.transform, Vector2.up)) {
+            if (transform.DotTest(collision.transform, Vector3.up)) {
                 velocity.y = 0f;
             }
         }
